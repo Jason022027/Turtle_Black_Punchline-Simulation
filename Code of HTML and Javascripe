@@ -1,0 +1,152 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Segmented Concentric Circles</title>
+    <button id="saveButton">Save as SVG</button>
+    <link rel="stylesheet" href="TBLP 20240910.CSS" />
+    <style>
+        /* 添加提示元素的樣式 */
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 12px;
+            display: none; /* 初始為隱藏 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 提示元素 -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <!-- SVG code to draw 12 concentric circles with 16 interactive segments each -->
+    <svg width="800" height="400" viewBox="0 0 400 200">
+        <!-- Text above both circles -->
+        <text x="200" y="30" text-anchor="middle" font-size="16" fill="black">EISDB7BB00</text>
+
+        <!-- First set of concentric circles -->
+        <g id="segments1" transform="translate(100, 100)"></g> <!-- Original group centered at (100, 100) -->
+        
+        <!-- Second set of concentric circles, translated to the right -->
+        <g id="segments2" transform="translate(300, 100)"></g> <!-- Second group centered at (300, 100) -->
+    </svg>
+
+    <script>
+        // Center coordinates and maximum radius
+        const cx = 0;  // Centers are now at (100, 100) and (300, 100) due to the transforms
+        const cy = 0;
+        const maxRadius = 60;
+        const levels = 14;
+        
+        // Color sequences for both circles
+        const colorsLeft = ['#FF0000', '#90EE90', '#03A9F4']; // Left circle colors
+        const colorsRight = ['#FF0000', '#90EE90', '#03A9F4', 'White']; // Right circle colors with white
+
+        const tooltip = document.getElementById('tooltip'); // Get the tooltip element
+        
+        // Function to create a set of segments within a given SVG group with specified colors
+        function createCircleSegments(svgGroup, colors, defaultColor) {
+            for (let i = 3; i < levels; i++) {
+                let innerRadius = (i * maxRadius) / levels;
+                let outerRadius = ((i + 1) * maxRadius) / levels;
+                const segments = i <= 7 ? 16 : 32;
+        
+                for (let j = 0; j < segments; j++) {
+                    let startAngle = (j * 360) / segments;
+                    let endAngle = ((j + 1) * 360) / segments;
+        
+                    let startRad = (startAngle * Math.PI) / 180;
+                    let endRad = (endAngle * Math.PI) / 180;
+        
+                    let x1 = cx + innerRadius * Math.cos(startRad);
+                    let y1 = cy + innerRadius * Math.sin(startRad);
+                    let x2 = cx + outerRadius * Math.cos(startRad);
+                    let y2 = cy + outerRadius * Math.sin(startRad);
+                    let x3 = cx + outerRadius * Math.cos(endRad);
+                    let y3 = cy + outerRadius * Math.sin(endRad);
+                    let x4 = cx + innerRadius * Math.cos(endRad);
+                    let y4 = cy + innerRadius * Math.sin(endRad);
+        
+                    let pathData = `M${x1},${y1} L${x2},${y2} A${outerRadius},${outerRadius} 0 0,1 ${x3},${y3} L${x4},${y4} A${innerRadius},${innerRadius} 0 0,0 ${x1},${y1} Z`;
+        
+                    let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', pathData);
+                    path.setAttribute('fill', defaultColor); // Set the default color
+                    path.setAttribute('stroke', 'black');
+                    path.setAttribute('data-color-index', colors.indexOf(defaultColor).toString());
+        
+                    // 添加鼠標懸停事件處理程序
+                    path.addEventListener('mousemove', function(event) {
+                        const segmentNumber = j + 1; // 計算段號（1 到 32）
+                        tooltip.textContent = `Level ${i + 1}, Segment ${segmentNumber}`;
+                        tooltip.style.display = 'block'; // 顯示提示
+                        tooltip.style.left = event.pageX + 10 + 'px'; // 根據鼠標位置更新提示位置
+                        tooltip.style.top = event.pageY + 10 + 'px';
+                    });
+
+                    path.addEventListener('mouseleave', function() {
+                        tooltip.style.display = 'none'; // 鼠標離開時隱藏提示
+                    });
+
+                    let link = document.createElementNS('http://www.w3.org/2000/svg', 'a');
+                    link.setAttribute('href', '#');
+                    link.setAttribute('onclick', `changeColor(event, ${i}, ${j}, '${svgGroup.id}')`);
+        
+                    link.appendChild(path);
+                    svgGroup.appendChild(link);
+        
+                    // 加载存储的颜色数据
+                    const savedColor = localStorage.getItem(`${svgGroup.id}-segment-${i}-${j}`);
+                    if (savedColor) {
+                        path.setAttribute('fill', savedColor);
+                        path.setAttribute('data-color-index', colors.indexOf(savedColor).toString());
+                    }
+                }
+            }
+        }
+        
+        // Function to handle color changes on click
+        function changeColor(event, i, j, groupId) {
+            event.preventDefault();
+            const path = event.currentTarget.querySelector('path');
+            const colors = groupId === 'segments1' ? colorsLeft : colorsRight; // Determine which color set to use
+        
+            let colorIndex = parseInt(path.getAttribute('data-color-index'));
+            colorIndex = (colorIndex + 1) % colors.length;
+        
+            path.setAttribute('fill', colors[colorIndex]);
+            path.setAttribute('data-color-index', colorIndex.toString());
+        
+            // Save the selected color to localStorage
+            localStorage.setItem(`${groupId}-segment-${i}-${j}`, colors[colorIndex]);
+        
+            // Calculate the segment number (1 to 32) based on j
+            const segmentNumber = j + 1;
+        
+            alert(`Segment Level ${i + 1}, Segment ${segmentNumber} clicked! Color changed to ${colors[colorIndex]}`);
+        }
+        
+        // Create segments for both groups with different color sets
+        createCircleSegments(document.getElementById('segments1'), colorsLeft, colorsLeft[0]); // Left circle with default red color
+        createCircleSegments(document.getElementById('segments2'), colorsRight, 'white'); // Right circle with default white color
+        
+        document.getElementById('saveButton').addEventListener('click', function() {
+            const svgElement = document.querySelector('svg');
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgElement);
+            const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'circles.svg';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        });
+        
+    </script>
+</body>
+</html>
