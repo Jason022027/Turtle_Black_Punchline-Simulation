@@ -1,0 +1,64 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Segmented Concentric Circles</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff; /* 設定背景顏色為淺灰色 */
+            text-align: center;
+            margin: 0; /* 去除預設 margin */
+            padding: 0; /* 去除預設 padding */
+        }
+
+        h1 {
+            color: #333; /* 設定標題顏色為深灰色 */
+            padding: 20px; /* 添加內邊距 */
+            margin: 0; /* 去除預設 margin */
+        }
+
+        svg {
+            border: 2px solid #333; /* 設定邊框顏色為深灰色 */
+            border-radius: 10px; /* 設定圓角邊框 */
+            background-color: #ffffff; /* 設定背景顏色為白色 */
+        }
+
+        svg text {
+            font-size: 20px;
+            font-weight: bold;
+            fill: #000000;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Segmented Concentric Circles</h1>
+    <svg width="800" height="400" viewBox="0 0 400 200">
+        <text x="200" y="30" text-anchor="middle">EISDB7BB00</text>
+        <g id="segments1" transform="translate(100, 100)"></g>
+        <g id="segments2" transform="translate(300, 100)"></g>
+    </svg>
+
+    <button id="saveButton">Save as SVG</button>
+    <button id="saveAsImageButton">Save as PNG</button>
+
+    <script>
+        // JavaScript code for functionality
+    </script>
+</body>
+</html>
