@@ -1,0 +1,216 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Segmented Concentric Circles</title>
+    <link rel="stylesheet" href="TBLP 20240910.CSS" />
+    <style>
+        /* 添加提示元素的樣式 */
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 12px;
+            display: none; /* 初始為隱藏 */
+        }
+        .machine-btn, .sub-machine-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 10px;
+            font-size: 16px;
+            background: #f0f0f0;
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-align: left;
+        }
+        .machine-btn.active, .sub-machine-btn.active {
+            background: #2196f3;
+            color: #fff;
+            font-weight: bold;
+        }
+        .sub-list {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <button id="saveButton">Save as SVG</button>
+    <button id="exportCSVBtn">匯出CSV</button>
+    <div style="display: flex;">
+        <!-- 左側：機台按鈕列表 -->
+        <div id="machineList" style="width: 180px; padding: 10px; border-right: 1px solid #ccc;">
+            <!-- 主系列 -->
+            <button class="machine-btn" data-type="EISDB7BB00">EISDB7BB00</button>
+            <div class="sub-list" style="display: none; margin-left: 20px;">
+                <button class="sub-machine-btn" data-type="EISDB7BB10">EISDB7BB10</button>
+                <button class="sub-machine-btn" data-type="EISDB7BB20">EISDB7BB20</button>
+                <button class="sub-machine-btn" data-type="EISDB7BB30">EISDB7BB30</button>
+                <button class="sub-machine-btn" data-type="EISDB7BB40">EISDB7BB40</button>
+            </div>
+            <!-- 其他主系列 -->
+            <button class="machine-btn" data-type="EISDB8CC01">EISDB8CC01</button>
+            <button class="machine-btn" data-type="EISDB9DD02">EISDB9DD02</button>
+        </div>
+        <!-- 右側：主內容區（SVG等） -->
+        <div style="flex: 1; padding: 10px;">
+            <div id="mainContent">
+                <div id="tooltip" class="tooltip"></div>
+                <button id="exportCSVBtn">匯出CSV</button>
+                <svg width="800" height="400" viewBox="0 0 400 200">
+                    <text id="machineTypeText" x="200" y="30" text-anchor="middle" font-size="16" fill="black">EISDB7BB00</text>
+                    <g id="segments1" transform="translate(100, 100)"></g>
+                    <g id="segments2" transform="translate(300, 100)"></g>
+                </svg>
+            </div>
+        </div>
+    </div>
+    <script>
+        // ====== 原本的SVG segment繪製與互動程式碼 ======
+        const cx = 0, cy = 0, maxRadius = 60, levels = 14;
+        const colorsLeft = ['#FF0000', '#90EE90', '#03A9F4'];
+        const colorsRight = ['#FF0000', '#90EE90', '#03A9F4', 'White'];
+        const tooltip = document.getElementById('tooltip');
+
+        function createCircleSegments(svgGroup, colors, defaultColor) {
+            for (let i = 3; i < levels; i++) {
+                let innerRadius = (i * maxRadius) / levels;
+                let outerRadius = ((i + 1) * maxRadius) / levels;
+                const segments = i <= 7 ? 16 : 32;
+                for (let j = 0; j < segments; j++) {
+                    let startAngle = (j * 360) / segments;
+                    let endAngle = ((j + 1) * 360) / segments;
+                    let startRad = (startAngle * Math.PI) / 180;
+                    let endRad = (endAngle * Math.PI) / 180;
+                    let x1 = cx + innerRadius * Math.cos(startRad);
+                    let y1 = cy + innerRadius * Math.sin(startRad);
+                    let x2 = cx + outerRadius * Math.cos(startRad);
+                    let y2 = cy + outerRadius * Math.sin(startRad);
+                    let x3 = cx + outerRadius * Math.cos(endRad);
+                    let y3 = cy + outerRadius * Math.sin(endRad);
+                    let x4 = cx + innerRadius * Math.cos(endRad);
+                    let y4 = cy + innerRadius * Math.sin(endRad);
+                    let pathData = `M${x1},${y1} L${x2},${y2} A${outerRadius},${outerRadius} 0 0,1 ${x3},${y3} L${x4},${y4} A${innerRadius},${innerRadius} 0 0,0 ${x1},${y1} Z`;
+                    let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', pathData);
+                    path.setAttribute('fill', defaultColor);
+                    path.setAttribute('stroke', 'black');
+                    path.setAttribute('data-color-index', colors.indexOf(defaultColor).toString());
+                    path.addEventListener('mousemove', function(event) {
+                        const segmentNumber = j + 1;
+                        tooltip.textContent = `Level ${i + 1}, Segment ${segmentNumber}`;
+                        tooltip.style.display = 'block';
+                        tooltip.style.left = event.pageX + 10 + 'px';
+                        tooltip.style.top = event.pageY + 10 + 'px';
+                    });
+                    path.addEventListener('mouseleave', function() {
+                        tooltip.style.display = 'none';
+                    });
+                    let link = document.createElementNS('http://www.w3.org/2000/svg', 'a');
+                    link.setAttribute('href', '#');
+                    link.setAttribute('onclick', `changeColor(event, ${i}, ${j}, '${svgGroup.id}')`);
+                    link.appendChild(path);
+                    svgGroup.appendChild(link);
+                    const savedColor = localStorage.getItem(`${svgGroup.id}-segment-${i}-${j}`);
+                    if (savedColor) {
+                        path.setAttribute('fill', savedColor);
+                        path.setAttribute('data-color-index', colors.indexOf(savedColor).toString());
+                    }
+                }
+            }
+        }
+        function changeColor(event, i, j, groupId) {
+            event.preventDefault();
+            const path = event.currentTarget.querySelector('path');
+            const colors = groupId === 'segments1' ? colorsLeft : colorsRight;
+            let colorIndex = parseInt(path.getAttribute('data-color-index'));
+            colorIndex = (colorIndex + 1) % colors.length;
+            path.setAttribute('fill', colors[colorIndex]);
+            path.setAttribute('data-color-index', colorIndex.toString());
+            localStorage.setItem(`${groupId}-segment-${i}-${j}`, colors[colorIndex]);
+            const segmentNumber = j + 1;
+            alert(`Segment Level ${i + 1}, Segment ${segmentNumber} clicked! Color changed to ${colors[colorIndex]}`);
+        }
+        createCircleSegments(document.getElementById('segments1'), colorsLeft, colorsLeft[0]);
+        createCircleSegments(document.getElementById('segments2'), colorsRight, 'white');
+        document.getElementById('saveButton').addEventListener('click', function() {
+            const svgElement = document.querySelector('svg');
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgElement);
+            const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'circles.svg';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        });
+
+        // ====== 機台按鈕展開/收合與型號顯示 ======
+        document.querySelectorAll('.machine-btn').forEach((btn, idx) => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.machine-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.sub-list').forEach(list => list.style.display = 'none');
+                if (this.getAttribute('data-type') === 'EISDB7BB00') {
+                    this.nextElementSibling.style.display = 'block';
+                }
+                document.getElementById('machineTypeText').textContent = this.getAttribute('data-type');
+            });
+        });
+        document.querySelectorAll('.sub-machine-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.querySelectorAll('.sub-machine-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('machineTypeText').textContent = this.getAttribute('data-type');
+            });
+        });
+        document.querySelector('.machine-btn').classList.add('active');
+        document.querySelector('.sub-list').style.display = 'block';
+
+        // ====== 匯出TBLP模型狀態為CSV ======
+        document.getElementById('exportCSVBtn').addEventListener('click', function () {
+            const rows = [["編號", "r_index", "theta_index", "狀態"]];
+            let id = 0;
+            for (let i = 3; i < levels; i++) {
+                const segments = i <= 7 ? 16 : 32;
+                for (let j = 0; j < segments; j++) {
+                    const r_index = i - 3;
+                    const theta_index = j;
+                    const key = `segments1-segment-${i}-${j}`;
+                    let color = localStorage.getItem(key);
+
+                    // 預設顏色為紅色（開）
+                    if (!color) {
+                        color = "#FF0000";
+                    }
+                    
+                    let status = "";
+                    if (color === "#FF0000") status = 0;       // 紅 → 開
+                    else if (color === "#90EE90") status = 1;  // 綠 → 半開
+                    else if (color === "#03A9F4") status = 2;  // 藍 → 全關
+
+                    rows.push([id, r_index, theta_index, status]);
+                    id++;
+                }
+            }      
+
+            // 用真實換行（\r\n）建立 CSV 字串，加入 BOM 避免 Excel 編碼錯誤
+            const csvContent = "\uFEFF" + rows.map(e => e.join(",")).join("\r\n");
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "tblp_segments_output.csv";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
+</body>
+</html>
