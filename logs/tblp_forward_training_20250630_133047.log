@@ -1,0 +1,35 @@
+2025-06-30 13:30:47,308 - INFO - ============================================================
+2025-06-30 13:30:47,308 - INFO - TBLP Forward Model Training Started
+2025-06-30 13:30:47,308 - INFO - 目標：學習 ΔTBLP → Δ膜厚 的關係
+2025-06-30 13:30:47,310 - INFO - ============================================================
+2025-06-30 13:30:47,310 - INFO - 步驟 1: 載入並建立差分數據...
+2025-06-30 13:30:47,315 - INFO - 原始膜厚數據維度: (100, 49)
+2025-06-30 13:30:47,316 - INFO - 原始狀態數據維度: (100, 272)
+2025-06-30 13:30:47,316 - INFO - ΔTBLP 數據維度: (99, 272)
+2025-06-30 13:30:47,316 - INFO - Δ膜厚 數據維度: (99, 49)
+2025-06-30 13:30:47,316 - INFO - 步驟 2: 預處理數據...
+2025-06-30 13:30:47,318 - INFO - 預處理後的 ΔTBLP 形狀: (99, 272)
+2025-06-30 13:30:47,318 - INFO - 預處理後的 Δ膜厚 形狀: (99, 49)
+2025-06-30 13:30:47,318 - INFO - 步驟 3: 建立 Forward 模型...
+2025-06-30 13:30:47,412 - WARNING - From C:\Users\jason\AppData\Local\Programs\Python\Python311\Lib\site-packages\keras\src\backend.py:1398: The name tf.executing_eagerly_outside_functions is deprecated. Please use tf.compat.v1.executing_eagerly_outside_functions instead.
+
+2025-06-30 13:30:47,515 - WARNING - From C:\Users\jason\AppData\Local\Programs\Python\Python311\Lib\site-packages\keras\src\optimizers\__init__.py:309: The name tf.train.Optimizer is deprecated. Please use tf.compat.v1.train.Optimizer instead.
+
+2025-06-30 13:30:47,523 - INFO - Forward 模型建立成功
+2025-06-30 13:30:47,523 - INFO - 步驟 4: 訓練模型...
+2025-06-30 13:30:47,644 - WARNING - From C:\Users\jason\AppData\Local\Programs\Python\Python311\Lib\site-packages\keras\src\utils\tf_utils.py:492: The name tf.ragged.RaggedTensorValue is deprecated. Please use tf.compat.v1.ragged.RaggedTensorValue instead.
+
+2025-06-30 13:30:47,830 - WARNING - From C:\Users\jason\AppData\Local\Programs\Python\Python311\Lib\site-packages\keras\src\engine\base_layer_utils.py:384: The name tf.executing_eagerly_outside_functions is deprecated. Please use tf.compat.v1.executing_eagerly_outside_functions instead.
+
+2025-06-30 13:30:49,485 - INFO - 步驟 5: 評估模型...
+2025-06-30 13:30:49,597 - INFO - 模型評估結果:
+2025-06-30 13:30:49,597 - INFO - MSE: 37.605797
+2025-06-30 13:30:49,598 - INFO - MAE: 4.994370
+2025-06-30 13:30:49,598 - INFO - R²: -0.115042
+2025-06-30 13:30:49,599 - INFO - 步驟 6: 繪製訓練結果...
+2025-06-30 13:30:50,267 - INFO - 訓練歷史圖已保存
+2025-06-30 13:30:50,268 - INFO - 步驟 7: 保存模型...
+2025-06-30 13:30:50,288 - INFO - 模型已保存: tblp_forward_model_20250630_133050.h5
+2025-06-30 13:30:50,288 - INFO - ============================================================
+2025-06-30 13:30:50,288 - INFO - 訓練完成！
+2025-06-30 13:30:50,289 - INFO - ============================================================
